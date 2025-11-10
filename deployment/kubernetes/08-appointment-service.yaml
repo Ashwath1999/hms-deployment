@@ -1,0 +1,155 @@
+# Appointment Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: appointment-service
+  namespace: hms
+  labels:
+    app: appointment-service
+    tier: backend
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: appointment-service
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: appointment-service
+        tier: backend
+        version: v1
+    spec:
+      containers:
+      - name: appointment-service
+        image: appointment-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3003
+          name: http
+        env:
+        - name: PORT
+          value: "3003"
+        - name: DB_HOST
+          value: postgres-appointment
+        - name: DB_NAME
+          value: hms_appointments
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: hms-config
+              key: DB_PORT
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: hms-config
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hms-secrets
+              key: DB_PASSWORD
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: hms-config
+              key: NODE_ENV
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: hms-config
+              key: LOG_LEVEL
+        - name: CORS_ORIGIN
+          valueFrom:
+            configMapKeyRef:
+              name: hms-config
+              key: CORS_ORIGIN
+        - name: SLOT_DURATION_MINUTES
+          valueFrom:
+            configMapKeyRef:
+              name: hms-config
+              key: SLOT_DURATION_MINUTES
+        - name: CLINIC_OPEN_HOUR
+          valueFrom:
+            configMapKeyRef:
+              name: hms-config
+              key: CLINIC_OPEN_HOUR
+        - name: CLINIC_CLOSE_HOUR
+          valueFrom:
+            configMapKeyRef:
+              name: hms-config
+              key: CLINIC_CLOSE_HOUR
+        - name: MAX_APPOINTMENTS_PER_DAY
+          valueFrom:
+            configMapKeyRef:
+              name: hms-config
+              key: MAX_APPOINTMENTS_PER_DAY
+        - name: MAX_RESCHEDULES
+          valueFrom:
+            configMapKeyRef:
+              name: hms-config
+              key: MAX_RESCHEDULES
+        - name: RESCHEDULE_CUTOFF_HOURS
+          valueFrom:
+            configMapKeyRef:
+              name: hms-config
+              key: RESCHEDULE_CUTOFF_HOURS
+        - name: FULL_REFUND_HOURS
+          valueFrom:
+            configMapKeyRef:
+              name: hms-config
+              key: FULL_REFUND_HOURS
+        - name: PARTIAL_REFUND_HOURS
+          valueFrom:
+            configMapKeyRef:
+              name: hms-config
+              key: PARTIAL_REFUND_HOURS
+        - name: PATIENT_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hms-config
+              key: PATIENT_SERVICE_URL
+        - name: DOCTOR_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hms-config
+              key: DOCTOR_SERVICE_URL
+        - name: BILLING_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hms-config
+              key: BILLING_SERVICE_URL
+        - name: PAYMENT_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hms-config
+              key: PAYMENT_SERVICE_URL
+        - name: NOTIFICATION_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hms-config
+              key: NOTIFICATION_SERVICE_URL
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3003
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /live
+            port: 3003
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3

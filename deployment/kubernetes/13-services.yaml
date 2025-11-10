@@ -1,0 +1,289 @@
+# Application Services for HMS
+# ClusterIP services for internal communication and NodePort for external access
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: patient-service
+  namespace: hms
+  labels:
+    app: patient-service
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3001
+    targetPort: 3001
+    protocol: TCP
+    name: http
+  selector:
+    app: patient-service
+    tier: backend
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: patient-service-external
+  namespace: hms
+  labels:
+    app: patient-service
+    tier: backend
+spec:
+  type: NodePort
+  ports:
+  - port: 3001
+    targetPort: 3001
+    nodePort: 30001
+    protocol: TCP
+    name: http
+  selector:
+    app: patient-service
+    tier: backend
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: doctor-service
+  namespace: hms
+  labels:
+    app: doctor-service
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3002
+    targetPort: 3002
+    protocol: TCP
+    name: http
+  selector:
+    app: doctor-service
+    tier: backend
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: doctor-service-external
+  namespace: hms
+  labels:
+    app: doctor-service
+    tier: backend
+spec:
+  type: NodePort
+  ports:
+  - port: 3002
+    targetPort: 3002
+    nodePort: 30002
+    protocol: TCP
+    name: http
+  selector:
+    app: doctor-service
+    tier: backend
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: appointment-service
+  namespace: hms
+  labels:
+    app: appointment-service
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3003
+    targetPort: 3003
+    protocol: TCP
+    name: http
+  selector:
+    app: appointment-service
+    tier: backend
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: appointment-service-external
+  namespace: hms
+  labels:
+    app: appointment-service
+    tier: backend
+spec:
+  type: NodePort
+  ports:
+  - port: 3003
+    targetPort: 3003
+    nodePort: 30003
+    protocol: TCP
+    name: http
+  selector:
+    app: appointment-service
+    tier: backend
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: billing-service
+  namespace: hms
+  labels:
+    app: billing-service
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3004
+    targetPort: 3004
+    protocol: TCP
+    name: http
+  selector:
+    app: billing-service
+    tier: backend
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: billing-service-external
+  namespace: hms
+  labels:
+    app: billing-service
+    tier: backend
+spec:
+  type: NodePort
+  ports:
+  - port: 3004
+    targetPort: 3004
+    nodePort: 30004
+    protocol: TCP
+    name: http
+  selector:
+    app: billing-service
+    tier: backend
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prescription-service
+  namespace: hms
+  labels:
+    app: prescription-service
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3005
+    targetPort: 3005
+    protocol: TCP
+    name: http
+  selector:
+    app: prescription-service
+    tier: backend
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prescription-service-external
+  namespace: hms
+  labels:
+    app: prescription-service
+    tier: backend
+spec:
+  type: NodePort
+  ports:
+  - port: 3005
+    targetPort: 3005
+    nodePort: 30005
+    protocol: TCP
+    name: http
+  selector:
+    app: prescription-service
+    tier: backend
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  namespace: hms
+  labels:
+    app: payment-service
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3006
+    targetPort: 3006
+    protocol: TCP
+    name: http
+  selector:
+    app: payment-service
+    tier: backend
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service-external
+  namespace: hms
+  labels:
+    app: payment-service
+    tier: backend
+spec:
+  type: NodePort
+  ports:
+  - port: 3006
+    targetPort: 3006
+    nodePort: 30006
+    protocol: TCP
+    name: http
+  selector:
+    app: payment-service
+    tier: backend
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: hms
+  labels:
+    app: notification-service
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3007
+    targetPort: 3007
+    protocol: TCP
+    name: http
+  selector:
+    app: notification-service
+    tier: backend
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service-external
+  namespace: hms
+  labels:
+    app: notification-service
+    tier: backend
+spec:
+  type: NodePort
+  ports:
+  - port: 3007
+    targetPort: 3007
+    nodePort: 30007
+    protocol: TCP
+    name: http
+  selector:
+    app: notification-service
+    tier: backend

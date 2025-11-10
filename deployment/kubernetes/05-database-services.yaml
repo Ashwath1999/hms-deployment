@@ -1,0 +1,142 @@
+# Database Services for HMS
+# ClusterIP services for internal database communication
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-patient
+  namespace: hms
+  labels:
+    app: postgres-patient
+    tier: database
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+    name: postgres
+  selector:
+    app: postgres-patient
+    tier: database
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-doctor
+  namespace: hms
+  labels:
+    app: postgres-doctor
+    tier: database
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+    name: postgres
+  selector:
+    app: postgres-doctor
+    tier: database
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-appointment
+  namespace: hms
+  labels:
+    app: postgres-appointment
+    tier: database
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+    name: postgres
+  selector:
+    app: postgres-appointment
+    tier: database
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-billing
+  namespace: hms
+  labels:
+    app: postgres-billing
+    tier: database
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+    name: postgres
+  selector:
+    app: postgres-billing
+    tier: database
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-prescription
+  namespace: hms
+  labels:
+    app: postgres-prescription
+    tier: database
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+    name: postgres
+  selector:
+    app: postgres-prescription
+    tier: database
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-payment
+  namespace: hms
+  labels:
+    app: postgres-payment
+    tier: database
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+    name: postgres
+  selector:
+    app: postgres-payment
+    tier: database
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-notification
+  namespace: hms
+  labels:
+    app: postgres-notification
+    tier: database
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+    name: postgres
+  selector:
+    app: postgres-notification
+    tier: database

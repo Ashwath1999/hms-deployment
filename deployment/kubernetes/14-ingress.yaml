@@ -1,0 +1,158 @@
+# Ingress Controller for HMS
+# Routes external HTTP/HTTPS traffic to internal services
+# Requires ingress controller (e.g., nginx-ingress) to be installed
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hms-ingress
+  namespace: hms
+  labels:
+    app: hms
+    tier: frontend
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: hms.local
+    http:
+      paths:
+      - path: /patient(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: patient-service
+            port:
+              number: 3001
+      - path: /doctor(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: doctor-service
+            port:
+              number: 3002
+      - path: /appointment(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: appointment-service
+            port:
+              number: 3003
+      - path: /billing(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: billing-service
+            port:
+              number: 3004
+      - path: /prescription(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: prescription-service
+            port:
+              number: 3005
+      - path: /payment(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: payment-service
+            port:
+              number: 3006
+      - path: /notification(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: notification-service
+            port:
+              number: 3007
+
+---
+# Alternative Ingress without path rewriting
+# Uncomment this section if you prefer direct path forwarding
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: hms-ingress-simple
+#   namespace: hms
+#   labels:
+#     app: hms
+#     tier: frontend
+#   annotations:
+#     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+# spec:
+#   ingressClassName: nginx
+#   rules:
+#   - host: patient.hms.local
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: patient-service
+#             port:
+#               number: 3001
+#   - host: doctor.hms.local
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: doctor-service
+#             port:
+#               number: 3002
+#   - host: appointment.hms.local
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: appointment-service
+#             port:
+#               number: 3003
+#   - host: billing.hms.local
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: billing-service
+#             port:
+#               number: 3004
+#   - host: prescription.hms.local
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: prescription-service
+#             port:
+#               number: 3005
+#   - host: payment.hms.local
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: payment-service
+#             port:
+#               number: 3006
+#   - host: notification.hms.local
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: notification-service
+#             port:
+#               number: 3007

@@ -1,0 +1,382 @@
+services:
+  # PostgreSQL Databases (one per service)
+  postgres-patient:
+    image: postgres:15-alpine
+    container_name: hms-postgres-patient
+    environment:
+      POSTGRES_DB: hms_patients
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5432:5432"
+    volumes:
+      - patient-db-data:/var/lib/postgresql/data
+    networks:
+      - hms-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-doctor:
+    image: postgres:15-alpine
+    container_name: hms-postgres-doctor
+    environment:
+      POSTGRES_DB: hms_doctors
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5433:5432"
+    volumes:
+      - doctor-db-data:/var/lib/postgresql/data
+    networks:
+      - hms-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-appointment:
+    image: postgres:15-alpine
+    container_name: hms-postgres-appointment
+    environment:
+      POSTGRES_DB: hms_appointments
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5434:5432"
+    volumes:
+      - appointment-db-data:/var/lib/postgresql/data
+    networks:
+      - hms-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-billing:
+    image: postgres:15-alpine
+    container_name: hms-postgres-billing
+    environment:
+      POSTGRES_DB: hms_billing
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5435:5432"
+    volumes:
+      - billing-db-data:/var/lib/postgresql/data
+    networks:
+      - hms-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-prescription:
+    image: postgres:15-alpine
+    container_name: hms-postgres-prescription
+    environment:
+      POSTGRES_DB: hms_prescriptions
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5436:5432"
+    volumes:
+      - prescription-db-data:/var/lib/postgresql/data
+    networks:
+      - hms-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-payment:
+    image: postgres:15-alpine
+    container_name: hms-postgres-payment
+    environment:
+      POSTGRES_DB: hms_payments
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5437:5432"
+    volumes:
+      - payment-db-data:/var/lib/postgresql/data
+    networks:
+      - hms-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-notification:
+    image: postgres:15-alpine
+    container_name: hms-postgres-notification
+    environment:
+      POSTGRES_DB: hms_notifications
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5438:5432"
+    volumes:
+      - notification-db-data:/var/lib/postgresql/data
+    networks:
+      - hms-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Microservices
+  patient-service:
+    build:
+      context: ../../hms-patient-service
+      dockerfile: Dockerfile
+    container_name: hms-patient-service
+    environment:
+      PORT: 3001
+      DB_HOST: postgres-patient
+      DB_PORT: 5432
+      DB_NAME: hms_patients
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      NODE_ENV: production
+      LOG_LEVEL: info
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres-patient:
+        condition: service_healthy
+    networks:
+      - hms-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  doctor-service:
+    build:
+      context: ../../hms-doctor-service
+      dockerfile: Dockerfile
+    container_name: hms-doctor-service
+    environment:
+      PORT: 3002
+      DB_HOST: postgres-doctor
+      DB_PORT: 5432
+      DB_NAME: hms_doctors
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      NODE_ENV: production
+      LOG_LEVEL: info
+      SLOT_DURATION_MINUTES: 30
+      CLINIC_OPEN_HOUR: 9
+      CLINIC_CLOSE_HOUR: 17
+      MAX_APPOINTMENTS_PER_DAY: 16
+    ports:
+      - "3002:3002"
+    depends_on:
+      postgres-doctor:
+        condition: service_healthy
+    networks:
+      - hms-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  appointment-service:
+    build:
+      context: ../../hms-appointment-service
+      dockerfile: Dockerfile
+    container_name: hms-appointment-service
+    environment:
+      PORT: 3003
+      DB_HOST: postgres-appointment
+      DB_PORT: 5432
+      DB_NAME: hms_appointments
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      NODE_ENV: production
+      LOG_LEVEL: info
+      PATIENT_SERVICE_URL: http://patient-service:3001
+      DOCTOR_SERVICE_URL: http://doctor-service:3002
+      BILLING_SERVICE_URL: http://billing-service:3004
+      NOTIFICATION_SERVICE_URL: http://notification-service:3007
+      MAX_RESCHEDULES: 2
+      RESCHEDULE_CUTOFF_HOURS: 1
+      FULL_REFUND_HOURS: 24
+      PARTIAL_REFUND_HOURS: 6
+    ports:
+      - "3003:3003"
+    depends_on:
+      postgres-appointment:
+        condition: service_healthy
+      patient-service:
+        condition: service_healthy
+      doctor-service:
+        condition: service_healthy
+    networks:
+      - hms-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  billing-service:
+    build:
+      context: ../../hms-billing-service
+      dockerfile: Dockerfile
+    container_name: hms-billing-service
+    environment:
+      PORT: 3004
+      DB_HOST: postgres-billing
+      DB_PORT: 5432
+      DB_NAME: hms_billing
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      NODE_ENV: production
+      LOG_LEVEL: info
+      TAX_RATE: 0.05
+      NOTIFICATION_SERVICE_URL: http://notification-service:3007
+    ports:
+      - "3004:3004"
+    depends_on:
+      postgres-billing:
+        condition: service_healthy
+    networks:
+      - hms-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  prescription-service:
+    build:
+      context: ../../hms-prescription-service
+      dockerfile: Dockerfile
+    container_name: hms-prescription-service
+    environment:
+      PORT: 3005
+      DB_HOST: postgres-prescription
+      DB_PORT: 5432
+      DB_NAME: hms_prescriptions
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      NODE_ENV: production
+      LOG_LEVEL: info
+      APPOINTMENT_SERVICE_URL: http://appointment-service:3003
+    ports:
+      - "3005:3005"
+    depends_on:
+      postgres-prescription:
+        condition: service_healthy
+    networks:
+      - hms-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  payment-service:
+    build:
+      context: ../../hms-payment-service
+      dockerfile: Dockerfile
+    container_name: hms-payment-service
+    environment:
+      PORT: 3006
+      DB_HOST: postgres-payment
+      DB_PORT: 5432
+      DB_NAME: hms_payments
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      NODE_ENV: production
+      LOG_LEVEL: info
+      BILLING_SERVICE_URL: http://billing-service:3004
+      NOTIFICATION_SERVICE_URL: http://notification-service:3007
+    ports:
+      - "3006:3006"
+    depends_on:
+      postgres-payment:
+        condition: service_healthy
+      billing-service:
+        condition: service_healthy
+    networks:
+      - hms-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  notification-service:
+    build:
+      context: ../../hms-notification-service
+      dockerfile: Dockerfile
+    container_name: hms-notification-service
+    environment:
+      PORT: 3007
+      DB_HOST: postgres-notification
+      DB_PORT: 5432
+      DB_NAME: hms_notifications
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      NODE_ENV: production
+      LOG_LEVEL: info
+    ports:
+      - "3007:3007"
+    depends_on:
+      postgres-notification:
+        condition: service_healthy
+    networks:
+      - hms-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  hms-network:
+    driver: bridge
+    name: hms-network
+
+volumes:
+  patient-db-data:
+    name: hms-patient-db
+  doctor-db-data:
+    name: hms-doctor-db
+  appointment-db-data:
+    name: hms-appointment-db
+  billing-db-data:
+    name: hms-billing-db
+  prescription-db-data:
+    name: hms-prescription-db
+  payment-db-data:
+    name: hms-payment-db
+  notification-db-data:
+    name: hms-notification-db
